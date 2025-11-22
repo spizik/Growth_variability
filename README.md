@@ -7,7 +7,7 @@ Scripts used to calculate the datasets underlying the study **“Drivers of incr
 Recalculated and processed datasets used in statistical analyses.
 
 - `Bootstrapped_crn_variability/` – Site chronologies and bootstrapped variability metrics  
-- `Calculated_models/` – Fitted LME models  
+- `Calculated_models/` – Fitted LME models - the full statistical models used in the manuscript are **not included** in this repository. They cannot be reliably estimated on the small demo subset of the data provided here, and therefore are not part of this GitHub version.  
 - `Depozitions/` – Annual sulphur and nitrogen deposition values for each site  
 - `Finalized_datasets/` – Final datasets used for graphing and model calculations  
 - `Recalculated_climate/` – Reconstructed climate variables (temperature, precipitation) for each site  
