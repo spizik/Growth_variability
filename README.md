@@ -16,8 +16,6 @@ Recalculated and processed datasets used in statistical analyses.
 - `Site_climate/` – Site-level temperature and precipitation  
 - `Soil_data/` – Soil characteristics for each site  
 
----
-
 ### `Data_preparation/`
 Scripts used for data cleaning, harmonization, and preprocessing.
 
