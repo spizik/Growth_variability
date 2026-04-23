@@ -3,6 +3,10 @@ Scripts used to calculate the datasets underlying the study **“Drivers of incr
 
 ## Project Structure
 
+###Code availability
+
+All analyses can be reproduced using the script `03_results_last_version.R` (original results) or `03_results_last_version_revised.R` (results after revision). Data recalculation can be performed using `02_00_dataset_preparation.R`, while `02_01_datasets_loading.R` is used for data loading. General calculation functions are provided in `01_functions.R`. Specific computational functions, analyses, and plotting routines are included within the respective scripts used for figure generation (see below).
+
 ### `Calculated_datasets/`
 Recalculated and processed datasets used in statistical analyses.
 
