@@ -341,6 +341,35 @@ create.rwi<-function(input.data, detrend="mean"){
     
   }
   
+  ## 50-years spline detrending
+  if(detrend=="Spline50"){
+    
+    binary_trw <- apply(temp_trw, 2, function(x) {
+      # Find indices of non-NA values
+      non_na_indices <- which(!is.na(x))
+      
+      if (length(non_na_indices) > 0) {
+        # Set the range of non-NA values to 1
+        x[min(non_na_indices):max(non_na_indices)] <- 1
+      }
+      
+      return(x)
+    })
+    
+    temp_trw <- temp_trw %>%
+      mutate(across(everything(), ~ ifelse(is.na(.x) & cumsum(!is.na(.x)) > 0, 0, .x)))
+    
+    temp_trw <- temp_trw * binary_trw
+    
+    trw_rwi <- dplR::detrend(
+      rwl = temp_trw,
+      method = "Spline",
+      nyrs = 50,
+      f = 0.5
+    )
+    
+  }
+  
   ## GAM detrending
   if(detrend=="GAM"){
     trw_rwi <- detrend.gam(temp_trw)
@@ -348,12 +377,23 @@ create.rwi<-function(input.data, detrend="mean"){
   
   ## qGAM detrending
   if(detrend=="qGAM"){
-    trw_rwi <- detrend.gam(temp_trw)
+    trw_rwi <- detrend.qgam(temp_trw)
   }
   
   ## Mean detrending
   if(detrend=="mean"){
-    trw_rwi <- temp_trw / colMeans(temp_trw, na.rm=T)
+    # Původní kalkulace
+    # trw_rwi <- temp_trw / colMeans(temp_trw, na.rm=T)
+    
+    # Odladěná kalkulace
+    tree_means <- colMeans(temp_trw, na.rm = TRUE)
+    
+    trw_rwi <- sweep(
+      temp_trw,
+      MARGIN = 2,
+      STATS = tree_means,
+      FUN = "/")
+    
   }
   
   return(trw_rwi)
@@ -896,6 +936,7 @@ init.data.frame<-function(input.data,
                      
                      cv_TRW=NA,
                      mid_TRW=NA,
+                     mid_BAI=NA,
                      std_chron=NA,
                      res_chron=NA,
                      last1=NA,
@@ -975,6 +1016,8 @@ calculate.site.data<-function(input,
       
       output[which(output$year==j),c("cv_TRW")]<-sd(sub.trw$TRW)/mean(sub.trw$TRW)
       output[which(output$year==j),c("mid_TRW")]<-mean(sub.trw$TRW)
+      
+      output[which(output$year==j),c("mid_BAI")]<-mean(sub.trw$BAI)
       
       output[which(output$year==j),c("sd_RWI")]<-sd(sub.rwi)
       output[which(output$year==j),c("cv_RWI")]<-sd(sub.rwi)/mean(sub.rwi)
@@ -1061,7 +1104,7 @@ prepare.data<-function(input,
   output<-do.call(rbind,output)
   return(output)
 }
-## ---------------------------------------------------------------- scale.variables ####
+## ---------- scale.variables ####
 ## Scales numerical predictor variables (centering and standardizing) for modelling
 #
 # input - data.frame containing model predictors; must include the variables listed below.
@@ -1072,6 +1115,7 @@ scale.variables<-function(input){
   # input=mod_dataset
   
   input$mid_TRW<-scale(input$mid_TRW)
+  input$mid_BAI<-scale(input$mid_BAI)
   input$elevation<-scale(input$elevation)
   input$max_cambial_age<-scale(input$max_cambial_age)
   input$max_age<-scale(input$max_age)

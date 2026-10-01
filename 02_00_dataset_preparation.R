@@ -52,8 +52,7 @@ pisy_mod_dataset_scaled<-read.table("Calculated_datasets/Finalized_datasets/scal
 qusp_mod_dataset_scaled<-read.table("Calculated_datasets/Finalized_datasets/scaled_mod_dataset_QUSP.txt", sep=";", dec=".", header=T)
 
 ## Model calculation ####
-# NOTE:
-# The fitted models used in the manuscript are not included in the repository.
-# They cannot be estimated on the reduced demo dataset and therefore are not loaded here.
+source("Data_preparation/09_models_calculation.R")
 
-# source("Data_preparation/09_models_calculation.R")
+## RWI comparisons ####
+source("Data_preparation/12_prepare_detrending_comparison.R")
