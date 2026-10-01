@@ -39,7 +39,8 @@ mod_dataset<-clim.dataset[,c("site_code",
                              "cv_TRW",
                              "sd_RWI",
                              "cv_RWI",
-                             "mid_TRW", 
+                             "mid_TRW",
+                             "mid_BAI",
                              "mean_temp",
                              "resid_temp",
                              "cwb",
@@ -64,6 +65,8 @@ mod_dataset<-add.sajrajty(mod_dataset, extracted.nsum, "nsum")
 mod_dataset<-merge(mod_dataset,soil_dataset_FH[,c("site_code", "pH", "C.N")],by.x="site_code",by.y="site_code")
 mod_dataset<-merge(mod_dataset,soil_dataset_L1[,c("site_code", "pH", "C.N")],by.x="site_code",by.y="site_code")
 
+mod_dataset$Species_composition <- site.list$species_composition[match(mod_dataset$site_code, site.list$site_code)]
+
 ## Renaming columns ####
 names(mod_dataset)<-c("site_code", 
                       "species", 
@@ -81,6 +84,7 @@ names(mod_dataset)<-c("site_code",
                       "sd_RWI",
                       "cv_RWI",
                       "mid_TRW", 
+                      "mid_BAI", 
                       "mean_temp",
                       "resid_temp",
                       "mean_cwb",
@@ -99,7 +103,8 @@ names(mod_dataset)<-c("site_code",
                       "pH_FH",  
                       "C.N_FH",
                       "pH_L1",  
-                      "C.N_L1")
+                      "C.N_L1",
+                      "Species_composition")
 
 mod_dataset$resid_cwb<-mod_dataset$normal_cwb-mod_dataset$mean_cwb
 
