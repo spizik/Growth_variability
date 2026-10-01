@@ -219,8 +219,8 @@ plot.crns.variability <- function(sp){
   names(elev_y) <- elevation_labels
   input$y <- elev_y[as.character(input$zone)]
   
-  tab <- table(input$elev_zone)
-  keep <- tab[as.character(input$elev_zone)] > 5
+  tab <- table(input$y )
+  keep <- tab[as.character(input$y)] > 5
   input <- input[keep, ]
   
   g <- ggplot(input)
@@ -238,8 +238,8 @@ plot.trws.means <- function(sp){
   names(elev_y) <- elevation_labels
   input$y <- elev_y[as.character(input$zone)]
   
-  tab <- table(input$elev_zone)
-  keep <- tab[as.character(input$elev_zone)] > 5
+  tab <- table(input$y)
+  keep <- tab[as.character(input$y)] > 5
   input <- input[keep, ]
   
   g<-ggplot(input)
@@ -266,6 +266,9 @@ plot.rbar <- function(sp){
   g
 }
 plot.eps <- function(sp){
+  
+  # sp = "FASY"
+  
   input <- subset(rwi.statistics, species == sp)
   
   input <- input[, c("elev_zone", "eps")]
@@ -349,7 +352,7 @@ rwi.statistics <- merge(
   site.list[, c("site_code", "species", "elevation")],
   by.x = "Site",
   by.y = "site_code",
-  all.x = TRUE
+  all.x = T
 )
 
 rwi.statistics$elev_zone <- cut(x = rwi.statistics$elevation, 

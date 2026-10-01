@@ -125,7 +125,7 @@ calculate.curve.differences<-function(in.crn, in.main){
 
 # For each site, fits a GLS model with AR(1) of standardized growth (std) against year to estimate the temporal slope. 
 # Returns a table of site codes, species, slope estimates, and a simple significance flag (“pos” for p < 0.05, “neg” otherwise). 
-calculate.curve.slopes<-function(input){
+calculate.curve.slopes.old<-function(input){
   
   ## Testing arguments
   # input=subset(df.crn.all, species=="FASY")
@@ -153,6 +153,45 @@ calculate.curve.slopes<-function(input){
   output$pval <- pval
   
   return(output)
+}
+calculate.curve.slopes <- function(input) {
+  
+  # input=subset(clim.dataset, species=="FASY")
+  
+  output <- data.frame(
+    site_code = unique(input$site_code),
+    species = unique(input$species),
+    slope = NA_real_,
+    pval = NA_character_
+  )
+  
+  for (i in seq_len(nrow(output))) {
+    
+    sub_dataset <- subset(input, site_code == output$site_code[i])
+    
+    model <- gls(
+      std_chron ~ year,
+      correlation = corAR1(form = ~ year),
+      data = sub_dataset
+    )
+    
+    tab <- summary(model)$tTable
+    slope <- tab["year", "Value"]
+    p <- tab["year", "p-value"]
+    
+    output$slope[i] <- slope
+    output$pval[i] <- if (is.na(p) || is.na(slope)) {
+      NA_character_
+    } else if (p < 0.05 && slope > 0) {
+      "pos"
+    } else if (p < 0.05 && slope < 0) {
+      "neg"
+    } else {
+      "none"
+    }
+  }
+  
+  na.omit(output)
 }
 
 # For a given species, fits GLS/LME models to intra-site (bootstrapped and LME-based) and inter-site variability time series to assess temporal trends. 
@@ -423,7 +462,7 @@ plot.booted.cv<-function(input, input.crn, input_alldata){
   
   ## Eventy
   g<-g+annotate("rect",xmin=1971,xmax=1992,ymin=0,ymax=0.89,fill="#BBBBBB",alpha=0.25)
-  g<-g+geom_vline(xintercept=c(1992, 2003),linetype="dotted",colour="#D73027",linewidth=0.75,alpha=0.25)
+  g<-g+geom_vline(xintercept=c(1992, 2003, 2015),linetype="dotted",colour="#D73027",linewidth=0.75,alpha=0.25)
   g<-g+geom_vline(xintercept=c(1996, 2010),linetype="dotted",colour="#26466D",linewidth=0.75,alpha=0.25)
   
   ## Hlavní data
@@ -484,7 +523,7 @@ plot.booted.cv.2<-function(input, input.crn, input_alldata){
     fill = NA,                
     colour = NA
   )
-  g<-g+geom_vline(xintercept=c(1992, 2003),linetype="dotted",colour="#D73027",linewidth=0.75,alpha=0.25)
+  g<-g+geom_vline(xintercept=c(1992, 2003, 2015),linetype="dotted",colour="#D73027",linewidth=0.75,alpha=0.25)
   g<-g+geom_vline(xintercept=c(1996, 2010),linetype="dotted",colour="#26466D",linewidth=0.75,alpha=0.25)
   
   ## Hlavní data
@@ -542,15 +581,20 @@ curve.differences<-rbind(calculate.curve.differences(subset(df.crn,species=="ABA
                          calculate.curve.differences(subset(df.crn,species=="FASY"), subset(clim.dataset, species=="FASY")),
                          calculate.curve.differences(subset(df.crn,species=="QUSP"), subset(clim.dataset, species=="QUSP")))
 
-df.crn.cutted <- df.crn.all[which(df.crn.all$site_code %in% clim.dataset$site_code),]
+# df.crn.cutted <- df.crn.all[which(df.crn.all$site_code %in% $site_code),]
+# df.crn.cutted <- unify.categories(df.crn.cutted)
+# curve.slopes<-rbind(calculate.curve.slopes(subset(df.crn.cutted, species=="ABAL")),
+#                     calculate.curve.slopes(subset(df.crn.cutted, species=="PCAB")),
+#                     calculate.curve.slopes(subset(df.crn.cutted, species=="PISY")),
+#                     calculate.curve.slopes(subset(df.crn.cutted, species=="FASY")),
+#                     calculate.curve.slopes(subset(df.crn.cutted, species=="QUSP")))
 
-df.crn.cutted <- unify.categories(df.crn.cutted)
+curve.slopes<-rbind(calculate.curve.slopes(subset(clim.dataset, species=="ABAL")),
+                    calculate.curve.slopes(subset(clim.dataset, species=="PCAB")),
+                    calculate.curve.slopes(subset(clim.dataset, species=="PISY")),
+                    calculate.curve.slopes(subset(clim.dataset, species=="FASY")),
+                    calculate.curve.slopes(subset(clim.dataset, species=="QUSP")))
 
-curve.slopes<-rbind(calculate.curve.slopes(subset(df.crn.cutted, species=="ABAL")),
-                    calculate.curve.slopes(subset(df.crn.cutted, species=="PCAB")),
-                    calculate.curve.slopes(subset(df.crn.cutted, species=="PISY")),
-                    calculate.curve.slopes(subset(df.crn.cutted, species=="FASY")),
-                    calculate.curve.slopes(subset(df.crn.cutted, species=="QUSP")))
 
 curve.slopes <- merge(curve.slopes, site.list[, c("site_code", "elevation")], by = "site_code")
 

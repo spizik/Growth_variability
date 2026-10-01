@@ -30,8 +30,8 @@ calc.effect.size<-function(input){
   ## Testing arguments
   # input=mod_main
   
-  var.names<-c("median_range",
-               "median_age",
+  var.names<-c("median_age",
+               "median_range",
                "mid_TRW",
                
                "mean_temp",
@@ -54,8 +54,8 @@ calc.effect.size<-function(input){
                "mean_temp:sox"
   )
   
-  var.labels<-c("Age range",
-                "Age",
+  var.labels<-c("Age",
+                "Age range",
                 "TRW",
                 
                 "Temp.",

@@ -37,19 +37,24 @@ omit.data<-function(evt,sites){
 boot.line<-function(input.points, spp){
   
   ## Testing arguments
-  # input.points=withinsite_2010
-  # spp="ABAL"
+  # input.points=withinsite_2015
+  # spp="QUSP"
   
   dta<-subset(input.points,species==spp)
   
   input.line<-data.frame(Species=rep(spp,5),
-                         year=c(min(dta$year):max(dta$year)),
+                         # year=c(min(dta$year):max(dta$year)),
+                         year=c(min(dta$year):(min(dta$year)+4)),
                          min=NA,mid=NA,max=NA)
   
   for(i in 1:nrow(input.line)){
     sub.data<-subset(dta,year==input.line$year[i])
     
-    input.line[i,c("min","mid","max")]<-quantile(apply(replicate(1000,sample(sub.data$cv_RWI, nrow(sub.data), T)),2,mean),probs=c(0.025,0.500,0.975))
+    if(nrow(sub.data) > 5) {
+      
+      input.line[i,c("min","mid","max")]<-quantile(apply(replicate(1000,sample(sub.data$cv_RWI, nrow(sub.data), T)),2,mean),probs=c(0.025,0.500,0.975))
+      
+    }
     
   }
   
@@ -134,7 +139,7 @@ test.range.differences<-function(input){
 test.intra.site.differences<-function(input.points){
   
   ## Testing arguments
-  # input.points=evt.03.ommited
+  # input.points=withinsite_2015
   
   line.data<-rbind(calc.differences(boot.line(input.points,"ABAL")),
                    calc.differences(boot.line(input.points,"PCAB")),
@@ -191,7 +196,7 @@ my.theme.nox<-function(graph,legend.pos="bottom"){
 plot.site.range.differences<-function(input.points){
   
   ## Testing arguments
-  # input.points=evt.03.ommited
+  # input.points=withinsite_2015
   
   line.data<-rbind(calc.differences(boot.line(input.points,"ABAL")),
                    calc.differences(boot.line(input.points,"PCAB")),
@@ -201,16 +206,22 @@ plot.site.range.differences<-function(input.points){
   line.data<-cut.our.range.vals(line.data)
   
   years<-as.numeric(unique(input.points$year))
-  years<-years[order(years)]
+  years<-c(min(line.data$year):(min(line.data$year)+4))
   years<-c("before",years[2:length(years)])
+  
+  line.data$min[which(line.data$min < -0.10)] <- -0.1
   
   g<-ggplot(line.data)
   g<-g+geom_hline(yintercept=0,linetype="dotted",colour="#000000")
   g<-g+geom_ribbon(mapping=aes(x=year,ymin=min,ymax=max,group=Species,fill=Species),alpha=0.1)
   g<-g+geom_point(mapping=aes(x=year,y=mid,group=Species,colour=Species),shape=1)
   g<-g+geom_line(mapping=aes(x=year,y=mid,group=Species,colour=Species))
-  g<-g+scale_x_continuous("Calendar year", limits=c(min(line.data$year),max(line.data$year)), breaks=c(min(line.data$year):max(line.data$year)), labels=years)
-  g<-g+scale_y_continuous("Difference in within-site variability", limits=c(-0.20, 0.20),breaks=seq(-2,2,0.1),labels=formatC(seq(-2,2,0.1),format="f",digits=2))
+  g<-g+scale_x_continuous(
+    "Calendar year", 
+    limits=c(min(line.data$year),(min(line.data$year)+4)), 
+    breaks=c(min(line.data$year):(min(line.data$year)+4)), 
+    labels=years)
+  g<-g+scale_y_continuous("Difference in within-site variability", limits=c(-0.10, 0.30),breaks=seq(-2,2,0.1),labels=formatC(seq(-2,2,0.1),format="f",digits=2))
   g<-g+scale_fill_manual(values=cols.species, breaks=names(cols.species))
   g<-g+scale_colour_manual(values=cols.species, breaks=names(cols.species))
   g<-my.theme(g)
@@ -219,21 +230,27 @@ plot.site.range.differences<-function(input.points){
 plot.chronology.range.differences<-function(input.points){
   
   ## Testing arguments
-  # input.points=evt.10
+  # input.points=crn_diff_2015
   
   input.points<-cut.our.range.vals(input.points)
   
   years<-as.numeric(unique(input.points$year))
-  years<-years[order(years)]
+  years<-c(min(input.points$year):(min(input.points$year)+4))
   years<-c("before",years[2:length(years)])
+  
+  input.points$min[which(input.points$min < -0.10)] <- -0.1
   
   g<-ggplot(input.points)
   g<-g+geom_hline(yintercept=0,linetype="dotted",colour="#000000")
   g<-g+geom_ribbon(mapping=aes(x=year,ymin=min,ymax=max,group=species,fill=species),alpha=0.1)
   g<-g+geom_point(mapping=aes(x=year,y=mid,group=species,colour=species),shape=1)
   g<-g+geom_line(mapping=aes(x=year,y=mid,group=species,colour=species))
-  g<-g+scale_x_continuous("Calendar year", limits=c(min(input.points$year),max(input.points$year)), breaks=c(min(input.points$year):max(input.points$year)), labels=years)
-  g<-g+scale_y_continuous("Difference in between-site variability", limits=c(-0.20, 0.20),breaks=seq(-2,2,0.1),labels=formatC(seq(-2,2,0.1),format="f",digits=2))
+  g<-g+scale_x_continuous(
+    "Calendar year", 
+    limits=c(min(input.points$year),(min(input.points$year)+4)), 
+    breaks=c(min(input.points$year):(min(input.points$year)+4)), 
+    labels=years)
+  g<-g+scale_y_continuous("Difference in between-site variability", limits=c(-0.10, 0.30),breaks=seq(-2,2,0.1),labels=formatC(seq(-2,2,0.1),format="f",digits=2))
   g<-g+scale_fill_manual(values=cols.species, breaks=names(cols.species))
   g<-g+scale_colour_manual(values=cols.species, breaks=names(cols.species))
   g<-my.theme(g)
@@ -297,6 +314,20 @@ crn_diff_2010<-rbind(prepare.crn.data(evt,"ABAL"),
                      prepare.crn.data(evt,"FASY"),
                      prepare.crn.data(evt,"QUSP"))
 
+## 2015
+evt<-2015
+withinsite_2015<-rbind(omit.data(evt,abal_mod_dataset),
+                       omit.data(evt,pcab_mod_dataset),
+                       omit.data(evt,pisy_mod_dataset),
+                       omit.data(evt,fasy_mod_dataset),
+                       omit.data(evt,qusp_mod_dataset))
+
+crn_diff_2015<-rbind(prepare.crn.data(evt,"ABAL"),
+                     prepare.crn.data(evt,"PCAB"),
+                     prepare.crn.data(evt,"PISY"),
+                     prepare.crn.data(evt,"FASY"),
+                     prepare.crn.data(evt,"QUSP"))
+
 
 
 ## Tests ####
@@ -312,6 +343,8 @@ print("----------------------------- 1995 -------------------------------------"
 print(test.inter.site.differences(crn_diff_1995))
 print("----------------------------- 2010 -------------------------------------")
 print(test.inter.site.differences(crn_diff_2010))
+print("----------------------------- 2010 -------------------------------------")
+print(test.inter.site.differences(crn_diff_2015))
 
 print("------------------------------------------------------------------------")
 print("------------------------------------------------------------------------")
@@ -325,6 +358,10 @@ print("----------------------------- 1995 -------------------------------------"
 print(test.intra.site.differences(withinsite_1995))
 print("----------------------------- 2010 -------------------------------------")
 print(test.intra.site.differences(withinsite_2010))
+print("----------------------------- 2015 -------------------------------------")
+# print("2015 nelze testovat")
+print(test.intra.site.differences(withinsite_2015))
+
 
 ## Figure making ####
 figure<-ggarrange(plot.chronology.range.differences(crn_diff_1992),
@@ -333,13 +370,16 @@ figure<-ggarrange(plot.chronology.range.differences(crn_diff_1992),
                   plot.chronology.range.differences(crn_diff_2003),
                   plot.site.range.differences(withinsite_2003),
                   
+                  plot.chronology.range.differences(crn_diff_2015),
+                  plot.site.range.differences(withinsite_2015),
+                  
                   plot.chronology.range.differences(crn_diff_1995),
                   plot.site.range.differences(withinsite_1995),
                   
                   plot.chronology.range.differences(crn_diff_2010),
                   plot.site.range.differences(withinsite_2010),
                   
-                  ncol=2,nrow=4,align="hv",labels=LETTERS[1:12], 
+                  ncol=2,nrow=5,align="hv",labels=LETTERS[1:12], 
                   common.legend=T,legend="bottom")
 
 

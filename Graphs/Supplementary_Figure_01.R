@@ -2,7 +2,7 @@
 ## Data preparation and calculations
 # Builds a site-level chronology dataset by selecting single-species sites and restricting years to 1961–2017.
 # Returns a long-format data frame with site, species, year, standardized and residual indices (std, res), and placeholder coordinate columns.
-prepare.crn.data<-function(input){
+prepare.crn.data.old<-function(input){
   
   # input=df.crn.cutted
   
@@ -28,6 +28,42 @@ prepare.crn.data<-function(input){
                          year = sub$year,
                          std = sub$std,
                          res = sub$res#,
+                         # x = site.list$lon[which(site.list$site_code == i)],
+                         # y = site.list$lat[which(site.list$site_code == i)]
+      )
+      
+      output.df <- rbind(output.df, temp)
+    }
+  }
+  
+  return(output.df)
+}
+prepare.crn.data<-function(input){
+  
+  # input=clim.dataset
+  
+  output.df <- data.frame(site = character(),
+                          species = character(),
+                          year = numeric(),
+                          std = numeric(),
+                          res = numeric(),
+                          x = numeric(),
+                          y = numeric())
+  
+  for(i in unique(input$site_code)){
+    
+    # i=names(input)[1]
+    # print(i)
+    
+    if(length(site.list$species[which(site.list$site_code == i)]) == 1){
+      sub<-subset(input, site_code == i)
+      sub<-sub[which(sub$year %in% c(1961:2017)),]
+      
+      temp <- data.frame(site = i,
+                         species = site.list$species[which(site.list$site_code == i)],
+                         year = sub$year,
+                         std = sub$std_chron,
+                         res = sub$res_chron#,
                          # x = site.list$lon[which(site.list$site_code == i)],
                          # y = site.list$lat[which(site.list$site_code == i)]
       )
@@ -153,7 +189,8 @@ plot.cv.data<-function(df){
 
 ## Calculations ####
 df.crn.cutted <- df.crn.all[which(df.crn.all$site_code %in% clim.dataset$site_code),]
-variogram_crn_data<-prepare.crn.data(df.crn.cutted)
+# variogram_crn_data<-prepare.crn.data(df.crn.cutted)
+variogram_crn_data<-prepare.crn.data(clim.dataset)
 variogram_site_data<-prepare.variability.data(clim.dataset)
 
 variogram_crn_data<-subset(variogram_crn_data, year>1960 & year<2017)

@@ -27,6 +27,11 @@ plot.sp.dist <- function(sp_name, sp_dist){
   g
 }
 
+## Selecting sites for Figure 1 ####
+selected.sites <- unique(clim.dataset$site_code)
+
+site.list.selected <- site.list[which(site.list$site_code %in% considered_sites),]
+
 ## Map of the region ####
 
 # Load elevation raster
@@ -59,7 +64,7 @@ names(elev_df)[3] <- "elev"
 
 europe <- ne_countries(continent = "Europe", scale = "large")
 
-g<-ggplot(site.list)
+g<-ggplot(site.list.selected)
 # Elevation as background
 g <- g + geom_raster(data = elev_df, aes(x = x, y = y, fill = elev), alpha = 0.35)
 g <- g + scale_fill_gradientn(colours = terrain.colors(7), guide = "none")
@@ -244,14 +249,16 @@ cwb.1<-subset(cwb.1, year<2017)
 
 cwb.1$year<-"all"
 cwb.1<-rbind(cwb.1,
-               bals[which(bals$year %in% c(1992, 1995, 2003,2010)),])
+               bals[which(bals$year %in% c(1992, 1995, 2003,2010,2015)),])
 cwb.1$x<-1
+cwb.1$x[which(cwb.1$year==2015)]<-6
 cwb.1$x[which(cwb.1$year==2010)]<-5
 cwb.1$x[which(cwb.1$year==2003)]<-4
 cwb.1$x[which(cwb.1$year==1995)]<-3
 cwb.1$x[which(cwb.1$year==1992)]<-2
 
 cwb.1$event<-"all"
+cwb.1$event[which(cwb.1$year==2015)]<-"dry"
 cwb.1$event[which(cwb.1$year==2010)]<-"moist"
 cwb.1$event[which(cwb.1$year==2003)]<-"dry"
 cwb.1$event[which(cwb.1$year==1995)]<-"moist"
@@ -265,9 +272,9 @@ cwb.1<-cwb.1[which(cwb.1$site %in% considered_sites),]
   
 g<-ggplot(cwb.1)
 g<-g+geom_boxplot(aes(x=as.factor(x),y=mean_bal ,fill=event),colour="#000000",size=0.66)
-g<-g+scale_x_discrete("Year",labels=c("1961-2017","1992","1995","2003","2010"))
+g<-g+scale_x_discrete("Year",labels=c("1961-2017","1992","1995","2003","2010","2015"))
 g<-g+scale_y_continuous("CWB",limits=c(-100,150),breaks=seq(-100,150,25))
-g<-g+scale_fill_manual(values=c("#D73027","#BBBBBB","#26466D"),breaks=c("all","dry","moist"))
+g<-g+scale_fill_manual(values=c("#BBBBBB","#D73027","#26466D"),breaks=c("all","dry","moist"))
 g<- g + theme_classic() 
 g<- g + theme(axis.line.x = element_line(colour="black"), 
               axis.text.x = element_text(colour="black"), 
@@ -284,14 +291,16 @@ temps.1<-subset(temps.1, year<2017)
 
 temps.1$year<-"all"
 temps.1<-rbind(temps.1,
-               temps[which(temps$year %in% c(1992, 1995, 2003,2010)),])
+               temps[which(temps$year %in% c(1992, 1995, 2003,2010,2015)),])
 temps.1$x<-1
+temps.1$x[which(temps.1$year==2015)]<-6
 temps.1$x[which(temps.1$year==2010)]<-5
 temps.1$x[which(temps.1$year==2003)]<-4
 temps.1$x[which(temps.1$year==1995)]<-3
 temps.1$x[which(temps.1$year==1992)]<-2
 
 temps.1$event<-"all"
+temps.1$event[which(temps.1$year==2015)]<-"dry"
 temps.1$event[which(temps.1$year==2010)]<-"moist"
 temps.1$event[which(temps.1$year==2003)]<-"dry"
 temps.1$event[which(temps.1$year==1995)]<-"moist"
@@ -305,9 +314,9 @@ temps.1<-temps.1[which(temps.1$site %in% considered_sites),]
 
 g<-ggplot(temps.1)
 g<-g+geom_boxplot(aes(x=as.factor(x),y=mean_temp ,fill=event),colour="#000000",size=0.66)
-g<-g+scale_x_discrete("Year",labels=c("1961-2017","1992","1995","2003","2010"))
+g<-g+scale_x_discrete("Year",labels=c("1961-2017","1992","1995","2003","2010","2015"))
 g<-g+scale_y_continuous("Temperature (°C)",limits=c(0,20),breaks=seq(0,100,2))
-g<-g+scale_fill_manual(values=c("#D73027","#BBBBBB","#26466D"),breaks=c("all","dry","moist"))
+g<-g+scale_fill_manual(values=c("#BBBBBB","#D73027","#26466D"),breaks=c("all","dry","moist"))
 g<- g + theme_classic() 
 g<- g + theme(axis.line.x = element_line(colour="black"), 
               axis.text.x = element_text(colour="black"), 

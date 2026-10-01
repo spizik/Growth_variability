@@ -43,32 +43,39 @@ make.dataset.comparing.detrend.betweensite <- function(sp){
   dta_GAM <- subset(read.table("Calculated_datasets/Methods_compare_data/chronologies_data_GAM.txt",sep=";"), species == sp)
   dta_qGAM <- subset(read.table("Calculated_datasets/Methods_compare_data/chronologies_data_qGAM.txt",sep=";"), species == sp)
   dta_spline <- subset(read.table("Calculated_datasets/Methods_compare_data/chronologies_data_spline.txt",sep=";"), species == sp)
+  dta_spline50 <- subset(read.table("Calculated_datasets/Methods_compare_data/chronologies_data_spline50.txt",sep=";"), species == sp)
   
   dta_mean$method <- "mean"
   dta_GAM$method <- "GAM"
   dta_qGAM$method <- "qGAM"
   dta_spline$method <- "spline"
+  dta_spline50$method <- "spline50"
   
   show_data_betweensite <- data.frame(year = c(dta_mean$year,
                                                dta_GAM$year,
                                                dta_qGAM$year,
-                                               dta_spline$year),
+                                               dta_spline$year,
+                                               dta_spline50$year),
                                       cv = c(dta_mean$cv.std.mid,
                                              dta_GAM$cv.std.mid,
                                              dta_qGAM$cv.std.mid,
-                                             dta_spline$cv.std.mid),
+                                             dta_spline$cv.std.mid,
+                                             dta_spline50$cv.std.mid),
                                       cv_min = c(dta_mean$cv.std.min,
                                                  dta_GAM$cv.std.min,
                                                  dta_qGAM$cv.std.min,
-                                                 dta_spline$cv.std.min),
+                                                 dta_spline$cv.std.min,
+                                                 dta_spline50$cv.std.min),
                                       cv_max = c(dta_mean$cv.std.max,
                                                  dta_GAM$cv.std.max,
                                                  dta_qGAM$cv.std.max,
-                                                 dta_spline$cv.std.max),
+                                                 dta_spline$cv.std.max,
+                                                 dta_spline50$cv.std.max),
                                       method = c(dta_mean$method,
                                                  dta_GAM$method,
                                                  dta_qGAM$method,
-                                                 dta_spline$method))
+                                                 dta_spline$method,
+                                                 dta_spline50$method))
   
   return(show_data_betweensite)
 }
@@ -77,28 +84,34 @@ make.dataset.comparing.detrend.withinsite <- function(sp){
   dta_GAM <- subset(read.table("Calculated_datasets/Methods_compare_data/dataset_GAM.txt",sep=";"), species == sp)
   dta_qGAM <- subset(read.table("Calculated_datasets/Methods_compare_data/dataset_qGAM.txt",sep=";"), species == sp)
   dta_spline <- subset(read.table("Calculated_datasets/Methods_compare_data/dataset_spline.txt",sep=";"), species == sp)
+  dta_spline50 <- subset(read.table("Calculated_datasets/Methods_compare_data/dataset_spline50.txt",sep=";"), species == sp)
   
   dta_mean$method <- "mean"
   dta_GAM$method <- "GAM"
   dta_qGAM$method <- "qGAM"
   dta_spline$method <- "spline"
+  dta_spline50$method <- "spline50"
   
   show_data_withinsite <- data.frame(site_code = c(dta_mean$site_code,
                                                    dta_GAM$site_code,
                                                    dta_qGAM$site_code,
-                                                   dta_spline$site_code),
+                                                   dta_spline$site_code,
+                                                   dta_spline50$site_code),
                                      year = c(dta_mean$year,
                                               dta_GAM$year,
                                               dta_qGAM$year,
-                                              dta_spline$year),
+                                              dta_spline$year,
+                                              dta_spline50$year),
                                      cv = c(dta_mean$cv_RWI,
                                             dta_GAM$cv_RWI,
                                             dta_qGAM$cv_RWI,
-                                            dta_spline$cv_RWI),
+                                            dta_spline$cv_RWI,
+                                            dta_spline50$cv_RWI),
                                      method = c(dta_mean$method,
                                                 dta_GAM$method,
                                                 dta_qGAM$method,
-                                                dta_spline$method))
+                                                dta_spline$method,
+                                                dta_spline50$method))
   
   return(show_data_withinsite)
 }
@@ -107,12 +120,14 @@ plot.boxplot.variance.betweensite<-function(input, graph_name){
   
   ## Testing arguments
   # input=show_data_withinsite
+  # input=dta.btw.abal
   
   input$x<-NA
   input$x[which(input$method=="mean")]<-1
   input$x[which(input$method=="GAM")]<-2
   input$x[which(input$method=="qGAM")]<-3
   input$x[which(input$method=="spline")]<-4
+  input$x[which(input$method=="spline50")]<-5
   
   input<-na.omit(input)
   input$grp<-paste0(input$x,"_",input$species)
@@ -121,7 +136,7 @@ plot.boxplot.variance.betweensite<-function(input, graph_name){
   g<-g+geom_boxplot(aes(x=x,y=cv,fill=method, group=method), alpha=0.75)
   g<-g+scale_fill_manual(values=cols.methods, breaks=names(cols.methods))
   g<-g+scale_y_continuous(graph_name,limits=c(0,0.9),breaks=seq(0,1,0.2),labels=formatC(seq(0,1,0.2),format="f",digits=1))
-  g<-g+scale_x_continuous("",limits=c(0.5,4.5),breaks=seq(1,4,1),labels=c("Mean", "GAM", "qGAM", "Spline"))
+  g<-g+scale_x_continuous("",limits=c(0.5,5.5),breaks=seq(1,5,1),labels=c("Mean", "GAM", "qGAM", "Spline", "Spline50"))
   g<-my.theme(g,"none")
   g
 }
@@ -145,7 +160,7 @@ plot.data.betweensite<-function(input, graph_name){
     colour = NA
   )
   g<-g+geom_vline(xintercept=c(1992, 2003),linetype="dotted",colour="#D73027",linewidth=0.75,alpha=0.25)
-  g<-g+geom_vline(xintercept=c(1996, 2010),linetype="dotted",colour="#26466D",linewidth=0.75,alpha=0.25)
+  g<-g+geom_vline(xintercept=c(1996, 2010, 2015),linetype="dotted",colour="#26466D",linewidth=0.75,alpha=0.25)
   g<-g+geom_ribbon(aes(x=year,ymin=cv_min, ymax=cv_max,fill=method, group=method), alpha=0.2)
   g<-g+geom_point(aes(x=year,y=cv,fill=method,colour=method, group=method), alpha=0.75)
   g<-g+scale_colour_manual(values=cols.methods, breaks=names(cols.methods))
@@ -165,7 +180,7 @@ plot.data.withinsite<-function(input, graph_name){
   g<-ggplot(input)
   g<-g+annotate("rect",xmin=1971,xmax=1992,ymin=0,ymax=0.89,fill="#BBBBBB",alpha=0.25)
   g<-g+geom_vline(xintercept=c(1992, 2003),linetype="dotted",colour="#D73027",linewidth=0.75,alpha=0.25)
-  g<-g+geom_vline(xintercept=c(1996, 2010),linetype="dotted",colour="#26466D",linewidth=0.75,alpha=0.25)
+  g<-g+geom_vline(xintercept=c(1996, 2010, 2015),linetype="dotted",colour="#26466D",linewidth=0.75,alpha=0.25)
   g<-g+geom_ribbon(aes(x=year,ymin=cv_min, ymax=cv_max,fill=method, group=method), alpha=0.2)
   g<-g+geom_point(aes(x=year,y=cv,fill=method,colour=method, group=method), alpha=0.75)
   g<-g+scale_colour_manual(values=cols.methods, breaks=names(cols.methods))
@@ -177,17 +192,23 @@ plot.data.withinsite<-function(input, graph_name){
 }
 plot.cormat <- function(input){
   ## Testing arguments
-  # input = corr_cv_by_method(show_data_betweensite)
+  # input = corr_cv_by_method(dta.btw.abal)
   
   cor_df <- as.data.frame(as.table(input))
-  cor_df$Var1 <- factor(cor_df$Var1, levels = rownames(cor_mat))
-  cor_df$Var2 <- factor(cor_df$Var2, levels = colnames(cor_mat))
+  cor_df$Var1 <- factor(cor_df$Var1, levels = rownames(input))
+  cor_df$Var2 <- factor(cor_df$Var2, levels = colnames(input))
   cor_df <- cor_df[as.numeric(cor_df$Var1) <= as.numeric(cor_df$Var2), ]
   
   g <- ggplot(cor_df, aes(Var2, Var1, fill = Freq)) 
   g <- g + geom_tile(color = "black")
   g <- g + geom_text(aes(label = sprintf("%.2f", Freq)), size = 4)
-  g <- g + scale_fill_gradient(low = "white", high = "grey60")
+  # g <- g + scale_fill_gradient(low = "white", high = "grey60")
+  g <- g + scale_fill_gradient2(
+    low = "blue",
+    mid = "white",
+    high = "red",
+    midpoint = 0,
+    limits = c(-1, 1))
   g <- g + scale_x_discrete(limits = rev(levels(cor_df$Var2)))
   g <- g + labs(x = NULL, y = NULL)
   g <- my.theme.cormat(g)
@@ -221,7 +242,7 @@ plot.panel.btw <- function(input){
   figure<-ggarrange(plot.boxplot.variance.betweensite(input, "Between-site variability"),
                     plot.data.betweensite(input),
                     plot.cormat(corr_cv_by_method(input)),
-                    nrow=1,ncol=3,widths=c(0.2,0.60,0.2))
+                    nrow=1,ncol=3,widths=c(0.25,0.50,0.25))
   
   figure
   
@@ -233,7 +254,7 @@ plot.panel.wth <- function(input){
   figure<-ggarrange(plot.boxplot.variance.betweensite(input, "Within-site variability"),
                     plot.data.withinsite(input),
                     plot.cormat(corr_cv_by_method(boot.data.general(input))),
-                    nrow=1,ncol=3,widths=c(0.2,0.60,0.2))
+                    nrow=1,ncol=3,widths=c(0.25,0.50,0.25))
   
   figure
   

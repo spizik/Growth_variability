@@ -3,6 +3,35 @@
 # Computes GLS-based temporal slopes (AR1) of standardized growth for each site of a given species.
 # Returns a table with slope estimates and significance flags (“pos” for significant, “neg” for non-significant).
 calculate.curve.slopes<-function(input){
+  # input=subset(clim.dataset, species=="FASY")
+  
+  
+  output<-data.frame(site_code=unique(input$site_code),
+                     species=unique(input$species),
+                     slope=NA,
+                     pval=NA)
+  
+  
+  for(i in 1:nrow(output)){
+    sub_dataset <- subset(input, site_code == output$site_code[i])
+    
+    gls_model_trend <- gls(std_chron ~ year, correlation = corAR1(form = ~ year), data = sub_dataset)
+    
+    output$slope[i] <- summary(gls_model_trend)$tTable[2,1]
+    output$pval[i] <- summary(gls_model_trend)$tTable[1,4]
+  }
+  
+  output<-na.omit(output)  
+  
+  pval <- rep("neg", nrow(output))
+  pval[which(output$pval<0.05)] <- "pos"
+  
+  output$pval <- pval
+  
+  return(output)
+}
+
+calculate.curve.slopes.old<-function(input){
   # input=subset(df.crn.all, species=="FASY")
   
   
@@ -274,11 +303,17 @@ df.crn.cutted <- df.crn.all[which(df.crn.all$site_code %in% clim.dataset$site_co
 
 df.crn.cutted <- unify.categories(df.crn.cutted)
 
-curve.differences<-rbind(calculate.curve.slopes(subset(df.crn.cutted, species=="ABAL")),
-                         calculate.curve.slopes(subset(df.crn.cutted, species=="PCAB")),
-                         calculate.curve.slopes(subset(df.crn.cutted, species=="PISY")),
-                         calculate.curve.slopes(subset(df.crn.cutted, species=="FASY")),
-                         calculate.curve.slopes(subset(df.crn.cutted, species=="QUSP")))
+# curve.differences<-rbind(calculate.curve.slopes(subset(df.crn.cutted, species=="ABAL")),
+#                          calculate.curve.slopes(subset(df.crn.cutted, species=="PCAB")),
+#                          calculate.curve.slopes(subset(df.crn.cutted, species=="PISY")),
+#                          calculate.curve.slopes(subset(df.crn.cutted, species=="FASY")),
+#                          calculate.curve.slopes(subset(df.crn.cutted, species=="QUSP")))
+
+curve.differences<-rbind(calculate.curve.slopes(subset(clim.dataset, species=="ABAL")),
+                         calculate.curve.slopes(subset(clim.dataset, species=="PCAB")),
+                         calculate.curve.slopes(subset(clim.dataset, species=="PISY")),
+                         calculate.curve.slopes(subset(clim.dataset, species=="FASY")),
+                         calculate.curve.slopes(subset(clim.dataset, species=="QUSP")))
 
 curve.differences <- merge(curve.differences, site.list[, c("site_code", "elevation")], by = "site_code")
 
